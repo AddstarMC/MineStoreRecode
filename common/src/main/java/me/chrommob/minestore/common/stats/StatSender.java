@@ -98,16 +98,16 @@ public class StatSender {
             connection.getOutputStream().flush();
             connection.getOutputStream().close();
             connection.getInputStream().close();
+            sendErrors = 0; // Reset error count
+            lastErrorLogTime = 0; // Reset last error log time
         } catch (IOException e) {
             // Throttle stats error logging to avoid spamming console
             // Only resend error message error every errorLogMins (or send is successful)
             long currentTime = System.currentTimeMillis();
             if (currentTime - lastErrorLogTime > errorLogMins * (60 * 1000)) {
-                lastErrorLogTime = currentTime;
                 sendErrors++;
-            } else {
-                sendErrors = 0; // Reset error count if within the throttling period
-                common.log("Failed to send stats: " + e.getMessage() + " (Consecutive errors: " + sendErrors + ")");
+                common.log("Failed to send stats data: " + e.getMessage() + " (Error count: " + sendErrors + ")");
+                lastErrorLogTime = currentTime;
             }
         } finally {
             if (connection != null) {
@@ -129,8 +129,17 @@ public class StatSender {
             connection.getOutputStream().flush();
             connection.getOutputStream().close();
             connection.getInputStream().close();
+            sendErrors = 0; // Reset error count
+            lastErrorLogTime = 0; // Reset last error log time
         } catch (IOException e) {
-            common.log(e.getMessage());
+            // Throttle stats error logging to avoid spamming console
+            // Only resend error message error every errorLogMins (or send is successful)
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastErrorLogTime > errorLogMins * (60 * 1000)) {
+                sendErrors++;
+                common.log("Failed to send stats data: " + e.getMessage() + " (Error count: " + sendErrors + ")");
+                lastErrorLogTime = currentTime;
+            }
         } finally {
             if (connection != null) {
                 connection.disconnect();
