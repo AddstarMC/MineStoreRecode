@@ -104,8 +104,8 @@ public class StatSender {
             // Throttle stats error logging to avoid spamming console
             // Only resend error message error every errorLogMins (or send is successful)
             long currentTime = System.currentTimeMillis();
+            sendErrors++;
             if (currentTime - lastErrorLogTime > errorLogMins * (60 * 1000)) {
-                sendErrors++;
                 common.log("Failed to send stats data: " + e.getMessage() + " (Error count: " + sendErrors + ")");
                 lastErrorLogTime = currentTime;
             }
@@ -135,8 +135,8 @@ public class StatSender {
             // Throttle stats error logging to avoid spamming console
             // Only resend error message error every errorLogMins (or send is successful)
             long currentTime = System.currentTimeMillis();
+            sendErrors++;
             if (currentTime - lastErrorLogTime > errorLogMins * (60 * 1000)) {
-                sendErrors++;
                 common.log("Failed to send stats data: " + e.getMessage() + " (Error count: " + sendErrors + ")");
                 lastErrorLogTime = currentTime;
             }
