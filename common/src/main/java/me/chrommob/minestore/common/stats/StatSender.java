@@ -30,6 +30,9 @@ public class StatSender {
     private final int CORE_COUNT;
     private final String SYSTEM_ARCHITECTURE;
     private final Gson gson = new Gson();
+    private long lastErrorLogTime = 0;
+    private int sendErrors = 0;
+    private int errorLogMins = 60;
     private Thread thread;
 
     public StatSender(MineStoreCommon common) {
@@ -96,7 +99,16 @@ public class StatSender {
             connection.getOutputStream().close();
             connection.getInputStream().close();
         } catch (IOException e) {
-            common.log(e.getMessage());
+            // Throttle stats error logging to avoid spamming console
+            // Only resend error message error every errorLogMins (or send is successful)
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastErrorLogTime > errorLogMins * (60 * 1000)) {
+                lastErrorLogTime = currentTime;
+                sendErrors++;
+            } else {
+                sendErrors = 0; // Reset error count if within the throttling period
+                common.log("Failed to send stats: " + e.getMessage() + " (Consecutive errors: " + sendErrors + ")");
+            }
         } finally {
             if (connection != null) {
                 connection.disconnect();
